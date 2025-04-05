@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ECommerce.Core.Models.Requests
+namespace ECommerce.Core.DTOs
 {
     public class LoginRequest
     {

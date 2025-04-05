@@ -32,7 +32,17 @@ namespace ECommerce.Data.Services
 
         public async Task UpdateAsync(Product product)
         {
-            _context.Products.Update(product);
+            var existingProduct = await _context.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
+
+            if (existingProduct == null)
+                throw new Exception("Ürün bulunamadı.");
+
+            // Sadece güncellenmesini istediğimiz alanları elle set edelim
+            existingProduct.Name = product.Name;
+            existingProduct.Description = product.Description;
+            existingProduct.Price = product.Price;
+            existingProduct.Stock = product.Stock;
+
             await _context.SaveChangesAsync();
         }
 

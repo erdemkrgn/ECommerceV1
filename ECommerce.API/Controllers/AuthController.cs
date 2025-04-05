@@ -4,9 +4,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using ECommerce.Core.Interfaces;
-using ECommerce.Core.Models.Requests;
 using ECommerce.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
+using ECommerce.Core.DTOs;
 
 namespace ECommerce.API.Controllers
 {

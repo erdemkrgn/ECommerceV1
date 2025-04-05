@@ -1,4 +1,6 @@
-﻿using ECommerce.Core.Entities;
+﻿using AutoMapper;
+using ECommerce.Core.DTOs;
+using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,50 +12,56 @@ namespace ECommerce.API.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly IMapper _mapper;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, IMapper mapper)
         {
             _productService = productService;
+            _mapper = mapper;
         }
 
-        // GET: api/Product
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var products = await _productService.GetAllAsync();
-            return Ok(products);
+            var response = _mapper.Map<List<ProductResponseDto>>(products);
+            return Ok(response);
         }
 
-        // GET: api/Product/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> Get(int id)
         {
             var product = await _productService.GetByIdAsync(id);
             if (product == null)
                 return NotFound(new { message = "Ürün bulunamadı." });
 
-            return Ok(product);
+            var response = _mapper.Map<ProductResponseDto>(product);
+            return Ok(response);
         }
 
-        // POST: api/Product
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Add(Product product)
+        public async Task<IActionResult> Add(ProductDto dto)
         {
+            var product = _mapper.Map<Product>(dto);
             await _productService.AddAsync(product);
             return Ok(new { message = "Ürün başarıyla eklendi." });
         }
 
-        // PUT: api/Product
-        [HttpPut]
+        [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update(Product product)
+        public async Task<IActionResult> Update(int id, ProductDto dto)
         {
-            await _productService.UpdateAsync(product);
+            var existing = await _productService.GetByIdAsync(id);
+            if (existing == null)
+                return NotFound(new { message = "Güncellenecek ürün bulunamadı." });
+
+            _mapper.Map(dto, existing);
+            await _productService.UpdateAsync(existing);
+
             return Ok(new { message = "Ürün başarıyla güncellendi." });
         }
 
-        // DELETE: api/Product/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
