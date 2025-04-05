@@ -66,6 +66,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
+
+
+builder.Services.AddScoped<IProductService, ProductService>();
 var app = builder.Build();
 
 // HTTP pipeline
