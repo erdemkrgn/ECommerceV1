@@ -8,15 +8,28 @@ namespace ECommerce.API.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<Product, ProductDto>().ReverseMap(); // iki yönlü
+            // Ürün
+            CreateMap<Product, ProductDto>().ReverseMap();
             CreateMap<Product, ProductResponseDto>();
 
+            // Kullanıcı
             CreateMap<User, UserDto>();
 
+            // Sepet
             CreateMap<CartItem, CartItemDto>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
                 .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User));
+
+            // Sipariş
+            CreateMap<OrderItem, OrderItemDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
+
+            CreateMap<Order, OrderResponseDto>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.OrderItems))
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User));
+
         }
     }
 }
