@@ -10,6 +10,13 @@ namespace ECommerce.API.Mapping
         {
             CreateMap<Product, ProductDto>().ReverseMap(); // iki yönlü
             CreateMap<Product, ProductResponseDto>();
+
+            CreateMap<User, UserDto>();
+
+            CreateMap<CartItem, CartItemDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User));
         }
     }
 }

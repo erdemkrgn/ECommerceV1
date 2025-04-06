@@ -22,8 +22,9 @@ namespace ECommerce.Data.Services
         public async Task<List<CartItem>> GetCartItemsAsync(int userId)
         {
             return await _context.CartItems
-                .Include(ci => ci.Product)
                 .Where(ci => ci.UserId == userId)
+                .Include(ci => ci.Product)
+                .Include(ci => ci.User)
                 .ToListAsync();
         }
 
@@ -52,14 +53,15 @@ namespace ECommerce.Data.Services
 
         public async Task RemoveFromCartAsync(int userId, int productId)
         {
-            var cartItem = await _context.CartItems
+            var item = await _context.CartItems
                 .FirstOrDefaultAsync(ci => ci.UserId == userId && ci.ProductId == productId);
 
-            if (cartItem != null)
-            {
-                _context.CartItems.Remove(cartItem);
-                await _context.SaveChangesAsync();
-            }
+            if (item == null)
+                throw new KeyNotFoundException("Ürün sepette bulunamadı.");
+
+            _context.CartItems.Remove(item);
+            await _context.SaveChangesAsync();
         }
+
     }
 }

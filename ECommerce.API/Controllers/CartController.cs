@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using ECommerce.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using AutoMapper;
+using ECommerce.Core.DTOs;
 
 namespace ECommerce.API.Controllers
 {
@@ -12,10 +14,12 @@ namespace ECommerce.API.Controllers
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
+        private readonly IMapper _mapper;
 
-        public CartController(ICartService cartService)
+        public CartController(ICartService cartService, IMapper mapper)
         {
             _cartService = cartService;
+            _mapper = mapper;
         }
 
         private int GetUserIdFromToken()
@@ -26,7 +30,6 @@ namespace ECommerce.API.Controllers
 
             return int.Parse(userIdClaim.Value);
         }
-
 
         [HttpGet]
         public async Task<IActionResult> GetCart()
@@ -40,8 +43,11 @@ namespace ECommerce.API.Controllers
             {
                 return Unauthorized(new { message = "Geçersiz kullanıcı token'ı." });
             }
+
             var cartItems = await _cartService.GetCartItemsAsync(userId);
-            return Ok(cartItems);
+            var response = _mapper.Map<List<CartItemDto>>(cartItems);
+
+            return Ok(response);
         }
 
         [HttpPost("add")]
@@ -56,6 +62,7 @@ namespace ECommerce.API.Controllers
             {
                 return Unauthorized(new { message = "Geçersiz kullanıcı token'ı." });
             }
+
             await _cartService.AddToCartAsync(userId, productId, quantity);
             return Ok(new { message = "Ürün sepete eklendi." });
         }
@@ -63,18 +70,17 @@ namespace ECommerce.API.Controllers
         [HttpDelete("remove")]
         public async Task<IActionResult> RemoveFromCart(int productId)
         {
-            int userId;
+            var userId = GetUserIdFromToken();
+
             try
             {
-                userId = GetUserIdFromToken();
+                await _cartService.RemoveFromCartAsync(userId, productId);
+                return Ok(new { message = "Ürün sepetten çıkarıldı." });
             }
-            catch
+            catch (KeyNotFoundException ex)
             {
-                return Unauthorized(new { message = "Geçersiz kullanıcı token'ı." });
+                return NotFound(new { message = ex.Message });
             }
-            await _cartService.RemoveFromCartAsync(userId, productId);
-            return Ok(new { message = "Ürün sepetten çıkarıldı." });
         }
     }
 }
-
